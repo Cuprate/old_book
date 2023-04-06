@@ -1,0 +1,7 @@
+[book]
+authors = ["Cuprate devs"]
+language = "en"
+multilingual = false
+src = "src"
+title = "Cuprate Docs"
+description = "This book covers Cuprate and Monero protocol documentation."
