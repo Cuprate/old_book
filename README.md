@@ -2,9 +2,10 @@
 
 ## About 
 
-[Cuprate](github.com/Cuprate/cuprate) is an independent Rust re-write of monerod, the only 
-Monero node. Cuprate will help to secure the Monero network by acting as a "saftey net" if 
-a critical implementation vulnerability is found in monerod.
+[Cuprate](github.com/Cuprate/cuprate) is an independent Monero node written from 
+the ground up in Rust, the only other Monero node is monerod written in C/C++. Cuprate will help 
+to secure the Monero network by acting as a "saftey net" if a critical implementation
+vulnerability was to be found in monerod.
 
 This book, curently under construction, will contain developer documentation for Cuprate and 
 also general Monero documenation. 
