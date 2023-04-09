@@ -198,22 +198,19 @@ contents can be safely ignored.
 
 Thses commands are in a request/ response format. Peers are expected to return 
 responses in the order they are recived. 
+### Common Admin Types
 
-### Handshake (`1001`)
+These types are used in multiple admin messages.
 
-#### Request
-
-A handshake request currently looks:
+#### PeerID Type
 
 ```c++
-struct request_t
-    {
-      basic_node_data node_data;
-      t_playload_type payload_data;
-    };
+  typedef uint64_t peerid_type;
 ```
 
-with basic_node_data being:
+Just a random uint thats created the first tine the daemon runs and is stored in p2pstate.bin
+
+#### Basic Node Data
 
 ```c++
 struct basic_node_data
@@ -226,33 +223,435 @@ struct basic_node_data
     uint32_t support_flags; // used to show the features this node supports the only current feature is fluffy blocks
   }
 ```
-and payload_data being:
+
+To see how basic_node_data is handled look [here]() 
+
+#### Core Sync Data
 
 ```c++
 struct CORE_SYNC_DATA
   {
-    uint64_t current_height;
-    uint64_t cumulative_difficulty;
-    uint64_t cumulative_difficulty_top64;
-    crypto::hash  top_id;
-    uint8_t top_version;
-    uint32_t pruning_seed;
+    uint64_t current_height; // the current height of the peers blockchain
+    uint64_t cumulative_difficulty; // lower 64 bits of the peers blockchains cumulative_difficulty 
+    uint64_t cumulative_difficulty_top64; // upper 64 bits of the peers blockchains cumulative_difficulty 
+    crypto::hash  top_id; // The hash of the most recent block in the peers blockchain
+    uint8_t top_version; // The major version of the peers top block 
+    uint32_t pruning_seed; // The peers pruning seed
   }
 ```
 
+To see how Core Sync Data is handled look [here]()
+
+#### Peer List Entry Base
+
+```c++
+  struct peerlist_entry_base
+  {
+    AddressType adr; // The address IPv(4|6)/ I2p/ Tor
+    peerid_type id; // A random u64 same as in basic_node_data 
+    int64_t last_seen; // The last time we recived a message from the peer will be set 0 when sending known peers to peers
+    uint32_t pruning_seed; // The peers pruning seed
+    uint16_t rpc_port; // The peers rpc port
+    uint32_t rpc_credits_per_hash; // The peers rpc credits per hash - used for charging for rpc
+  }
+```
+
+Peer list entry base is used for every white/ grey peer in Monero's peer list, It stores information needed to decide optimal peers to connect to. 
+
+### Handshake (`1001`)
+
+Used to establish a P2P connection with a peer. 
+
+<details>
+
+<summary>Request</summary>
+
+A handshake request currently looks like:
+
+```c++
+struct request_t
+    {
+      basic_node_data node_data;
+      t_playload_type payload_data;
+    };
+```
+[basic_node_data](#basic-node-data)
+
+[payload_data](#core-sync-data) *payload data is just core_sync_data
+
+To see how a handshake request is handled look [here]()
+
+</details>
+
+<details>
+
+<summary>Response</summary>
+A Handshake response currently looks like:
+
+```c++
+struct response_t
+    {
+      basic_node_data node_data;
+      t_playload_type payload_data;
+      std::vector<peerlist_entry> local_peerlist_new;
+    }
+```
+
+[basic_node_data](#basic-node-data)
+
+[payload_data](#core-sync-data) *payload data is just core_sync_data
+
+peerlist_entry being:
+
+```c++
+  typedef peerlist_entry_base<epee::net_utils::network_address> peerlist_entry;
+```
+[Peer List Entry Base](#peer-list-entry-base)
+
+To see how a handshake response is handled look [here]()
+
+</details>
+
 ### Timed Sync (`1002`)
+
+Used when the peer hasn't sent a message in a while or to retrieve peers from the peer.
+
+<details>
+<summary>Request</summary>
+A timed sync request currently looks like:
+
+```c++ 
+struct request_t
+    {
+      t_playload_type payload_data;
+    }
+```
+
+[payload_data](#core-sync-data) *payload data is just core_sync_data
+
+To see how a timed sync request is handled look [here]() 
+
+</details>
+
+<details>
+<summary>Response</summary>
+
+```c++
+struct response_t
+{
+  t_playload_type payload_data;
+  std::vector<peerlist_entry> local_peerlist_new;
+}
+```
+[payload_data](#core-sync-data) *payload data is just core_sync_data
+
+peerlist_entry being:
+
+```c++
+  typedef peerlist_entry_base<epee::net_utils::network_address> peerlist_entry;
+```
+[Peer List Entry Base](#peer-list-entry-base)
+
+To see how a timed sync response is handled look [here]()
+
+</details>
+
+
 ### Ping (`1003`)
+Used to make "callback" connection, to be sure that opponent node 
+have accessible connection point. Only other nodes can add peer to peerlist,
+and ONLY in case when peer has accepted connection and answered to ping.
+
+<details>
+<summary>Request</summary>
+
+```c++
+struct request_t
+{
+  /*actually we don't need to send any real data*/
+};
+```
+To see how a ping request is handled look [here]()
+
+</details>
+
+<details>
+<summary>Response</summary>
+
+```c++
+struct response_t
+{
+  std::string status;
+  peerid_type peer_id; 
+};
+```
+
+[peer_id](#peerid-type)
+
+To see how a ping response is handled look [here]()
+
+
+</details>
+
 ### Support Flags (`1007`)
+
+Used when the peer does not send their support flags in the handshake.
+<details>
+<summary>Request</summary>
+
+```c++
+struct request_t
+    {
+      // Again don't actually need to send any data  
+    };
+```
+
+To see how a support flags request is handled look [here]()
+
+
+</details>
+
+<details>
+<summary>Response</summary>
+
+```c++
+struct response_t
+{
+  uint32_t support_flags; // used to show the features this node supports the only current feature is fluffy blocks
+}
+```
+
+To see how a support flags response is handled look [here]()
+
+
+</details>
 
 ## Cryptonote Protocol Commands
 
+### Common Protocol Types
+
+#### TX Blob Entry
+
+```c++
+struct tx_blob_entry
+{
+  blobdata blob; // The Tx Blob pruned or non-pruned
+  crypto::hash prunable_hash; // The prunable hash this field wont exist for a non-pruned tx
+}
+``` 
+
+
+#### Block Complete Entry
+
+```c++
+
+struct block_complete_entry
+{
+  bool pruned; // If this block is pruned or not
+  blobdata block; // The block blob
+  uint64_t block_weight; // The blocks weight will be 0 for a non-pruned block
+  std::vector<tx_blob_entry> txs; // The block transactions
+}
+```
+
+[Tx Blob entry](#tx-blob-entry)
+
+
 ### New Block (`2001`)
+
+Used before fluffy blocks to notify peers of a new block.
+
+<details>
+<summary>Details</summary>
+
+```c++
+struct request_t
+{
+  block_complete_entry b;
+  uint64_t current_blockchain_height; // The height of the peers Blockchain
+};
+```
+
+[Block Complete Entry](#block-complete-entry) - This will contain ALL the transaction un-pruned.
+
+To see how a New Block is handled look [here]()
+
+</details>
+
 ### New Transactions (`2002`)
+
+Used to notify peers of new tx-pool transactions.
+
+<details>
+<summary>Details</summary>
+
+```c++
+struct request_t
+{
+  std::vector<blobdata>   txs; // A list of un-pruned tx blobs
+  std::string _; // padding
+  bool dandelionpp_fluff; //true if this is a dpp fluff
+};
+```
+
+To see how a New Block is handled look [here]()
+
+</details>
+
 ### Request Get Objects (`2003`)
+
+Used to fetch Blocks by hash from a peer.  
+
+<details>
+<summary>Details</summary>
+
+
+```c++
+struct request_t
+{
+  std::vector<crypto::hash> blocks; // The block ids
+  bool prune; // If we mind the blocks being pruned 
+}
+```
+
+To see how a request get objects is handled look [here]()
+
+</details>
+
+
 ### Response Get Objects (`2004`)
+
+A response to a request get objects 
+
+<details>
+<summary>Details</summary>
+
+```c++
+struct request_t
+{
+  std::vector<block_complete_entry>  blocks; // Blocks with all the txs
+  std::vector<crypto::hash>          missed_ids; // blocks we did not have
+  uint64_t                         current_blockchain_height;
+};
+```
+
+[Block Complete Entry](#block-complete-entry)
+
+To see how a response get objects is handled look [here]()
+
+
+</details>
+
+
 ### Request Chain (`2006`)
+Request to get the peers block ids that we are missing.
+
+note the amount of Block ids that can be sent in one response is capped. 
+
+<details>
+<summary>Details</summary>
+
+```c++
+struct request_t
+{
+  std::list<crypto::hash> block_ids; /*IDs of the first 10 blocks are sequential, next goes with pow(2,n) offset, like 2, 4, 8, 16, 32, 64 and so on, and the last one is always genesis block */
+  bool prune;
+}
+```
+
+To see how a request chain entry is handled look [here]()
+
+
+</details>
+
 ### Response Chain Entry (`2007`)
+
+A response to a request chain.
+
+<details>
+<summary>Details</summary>
+
+```c++
+struct request_t
+{
+  uint64_t start_height; // the height of the first block id
+  uint64_t total_height; // the hieght of the peers chain
+  uint64_t cumulative_difficulty; 
+  uint64_t cumulative_difficulty_top64;
+  std::vector<crypto::hash> m_block_ids; // the block ids
+  std::vector<uint64_t> m_block_weights; 
+  cryptonote::blobdata first_block; // the first block where the peers and our chain potentailly diverge will so will be m_block_ids[1]
+}
+```
+To see how a response chain entry is handled look [here]()
+
+
+</details>
+
+
 ### New Fluffy Block (`2008`)
+
+A notification of a new block. Sent initally without any transactions but could come in response to a [Request Fluffy Missing TX](#request-fluffy-missing-tx-2009) in which case 
+this will contain the requested missing txs.
+
+<details>
+<summary>Details</summary>
+
+```c++
+struct request_t
+{
+  block_complete_entry b;
+  uint64_t current_blockchain_height;
+}
+```
+
+[Block Complete Entry](#block-complete-entry)
+
+
+To see how a new fluffy block is is handled look [here]()
+
+
+</details>
+
 ### Request Fluffy Missing TX (`2009`)
+
+A request for txs we are missing from an incomming fluffy block. 
+
+<details>
+<summary>Details</summary>
+
+```c++
+struct request_t
+{
+  crypto::hash block_hash; // The block we wan't the txs from
+  uint64_t current_blockchain_height; 
+  std::vector<uint64_t> missing_tx_indices; // the idxs of the transactions in the block
+}
+```
+
+#### missing_tx_indices
+
+This is literally just the idx of the transaction in the block so if we are missing the first tx in the block we would ask for tx at idx 0.
+
+To see how a request fluffy missing tx is is handled look [here]()
+
+
+</details>
+
+
 ### Get Tx Pool Compliment (`2010`)
 
+A request for tx pool transactions we don't have
+
+<details>
+<summary>Details</summary>
+
+
+```c++
+struct request_t
+{
+  std::vector<crypto::hash> hashes; // our tx-pool transaction hashes 
+}
+```
+
+</details>
