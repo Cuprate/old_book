@@ -113,7 +113,7 @@ command being invoked.
 
 A signed 32-bit little endian integer representing the response from the peer
 from the last command that was invoked. This is `0` for request messages and
-1 for ok responses.
+`1` for ok responses.
 
 ```c++
 #define LEVIN_OK                                        0
