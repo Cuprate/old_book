@@ -4,6 +4,8 @@
 
 # Monero
 
+- [Database](monero/database/db_into.md)
+    - [Pruning](monero/database/pruning.md)
 - [Network](monero/network/net_intro.md)
     - [Levin](monero/network/levin.md)
     - [Admin Protocol](monero/network/admin_protocol.md)  
