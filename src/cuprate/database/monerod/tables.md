@@ -2,7 +2,7 @@
 
 > Be aware that the current database schema might change when Seraphis will be implemented. See: [https://github.com/seraphis-migration/wallet3/issues/11](https://github.com/seraphis-migration/wallet3/issues/11)
 
-Monerod use simple tables for storing blob. But metadata are often stored on tables with dummy keys. Such tables are declared with DUPSORT & DUPFIXED flags. DUPSORT is a flag for the database to support duplicated data, DUPFIXED is used when the key is of a fixed size, to gain place
+Monerod store every type of dynamic size under simple key-value tables. But any constant sized items (such as block's metadata for example) are stored as duplicated values in tables using dummy keys. Such tables are declared with DUPSORT & DUPFIXED flags. DUPSORT is a flag for the database to support duplicated data, DUPFIXED is used when the key is of a fixed size, to gain place
 (8 bytes per key).
 
 When talking about Subkey in this chapter, you must understand that the table use a dummy key and that the Subkey used to retrieve data is the first bytes, or prefix, of this data monerod is trying to get.
@@ -99,9 +99,9 @@ This table is used for optimization purpose. It defines at which block's height 
 ***
 **Flags**: MDB_INTEGERKEY | MDB_DUPSORT | MDB_DUPFIXED</br>
 **Subkey**: Transaction's Hash as `char [32]`(8 bytes)</br>
-**Value**: Transaction's ID and unlock time as `{uint64_t, uint64_t}` (16 bytes).</br>
+**Value**: Transaction's ID unlock time, and block's height as `tx_data_t` (24 bytes).</br>
 
-This table define the relation between transaction's hash (that can be found in blocks) and its transaction ID and unlock time.
+This table define the relation between transaction's hash (that can be found in blocks) and its transaction ID, transaction's unlock time and origin block's height.
 
 ### txs_outputs
 ***
