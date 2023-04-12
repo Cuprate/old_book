@@ -1,3 +1,5 @@
+## BlockchainDB Errors
+
 Monerod database implement an error template called `DB_EXCEPTION` (see `blockchain_db.h`). This class permit the node to identify errors from the database and react acordingly to these events. This chapter is just to bring some details on each errors:
 
 The **DB_EXCEPTION** Definition : 
@@ -135,7 +137,7 @@ class BLOCK_PARENT_DNE : public DB_EXCEPTION
     BLOCK_PARENT_DNE(const char* s) : DB_EXCEPTION(s) { }
 };
 ```
-Only used one time in `add_block()` function when the specified parent of the block is the top block (*grandfather paradox* it's impossible)
+Only used one time in `add_block()` function when the found parent of the block isn't the previous one in blockchain canonical order. Block N must have Block N-1 as the parent.
 ```cpp
     blk_height *prev = (blk_height *)parent_key.mv_data;
     if (prev->bh_height != m_height - 1)

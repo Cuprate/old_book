@@ -68,7 +68,7 @@ Here's a kind message from the developers that is definitely going to help us un
  */
 ```
 
-**TL;DR**: For storage efficiency, object identifier used as database key are mapped as 64-bit integer. A Block ID is its height. For optimal performance a lot of data are duplicated into different tables to accelerate gathering by not having to deserialize an entire block if we just want an Output's commitment for example. Spent key images are duplicated to quickly verify if it's been spent. Unspent Outputs are duplicated in a table to quickly gather random them for mixins.
+**TL;DR**: For storage efficiency, object identifier used as database key are mapped as 64-bit integer. A Block ID is its height. For optimal performance a lot of data are duplicated into different tables to accelerate gathering by not having to deserialize an entire block if we just want an Output's commitment for example. Spent key images are duplicated to quickly verify if it's been spent. Unspent Outputs are duplicated in a table to quickly gather random ones for mixins.
 
 *If at this state you're lost, you might want to go check the Monero documentation. Speificly the Blockchain part*
 
