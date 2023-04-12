@@ -45,7 +45,7 @@ A peer must respond in less than 5 seconds:
 
 When we receive the response we:
 - Check the [basic node data](levin.md#basic-node-data)'s [network_id](#network-id) is correct for the network we are on
-- Handle and check the received peers by the function `handle_remote_peerlist` which is explained [here]()
+- Handle and check the received peers by the function `handle_remote_peerlist` which is explained [here](peer_store.md#handle-remote-peer-list)
 - Process the peers core sync data by the function `process_payload_sync_data` which is explained [here]()
 - We add the peer to our [white peer list](peer_store.md#white-list)
 - Check If the peer did not send their support flags, if so  we initiate a [support flag request]()
