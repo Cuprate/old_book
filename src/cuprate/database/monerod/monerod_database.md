@@ -18,7 +18,7 @@ src/
 
 Monerod use **LMDB** (Lightning Memory-Mapped Database), an embedded key-value database with a performance and stability record speaking for itself. It uses a Binary+ Tree to structure its stored data, this make it extremely efficient on disk optimized for random I/O, such as SSD. (*This is why the Monero Community discourage the use of HDD, that is designed for sequential writes. It really put overhead on the disk and dramatically slow down performance and its lifespan*.)
 
-LMDB is lightweight, performant, embedded, ACID, reliable and support Copy-On-Write. So it is natural for the core-project to develop Monerod on it. Other options that could have been considered is LevelDB developed by Google, that show better read performance.
+LMDB is lightweight, performant, embedded, ACID, reliable and support Copy-On-Write. So it is natural for the core-project to develop Monerod on top of it. Other options that could have been considered is LevelDB developed by Google, that show better read performance.
 
 ### Introduction to Cryptonote Blockchain database interface:
 
@@ -68,9 +68,9 @@ Here's a kind message from the developers that is definitely going to help us un
  */
 ```
 
-**TL;DR**: For storage efficiency, object identifier used as key are mapped as 64-bit integer. A Block ID is its height. For optimal performance a lot of data are duplicated into different tables to accelerate gathering by not having to deserialize an entire block if we just want an Output's commitment for example. Spent key images are duplicated to quickly verify if it's been spent. Unspent Outputs are duplicated in a table to quickly gather random them for mixins.
+**TL;DR**: For storage efficiency, object identifier used as database key are mapped as 64-bit integer. A Block ID is its height. For optimal performance a lot of data are duplicated into different tables to accelerate gathering by not having to deserialize an entire block if we just want an Output's commitment for example. Spent key images are duplicated to quickly verify if it's been spent. Unspent Outputs are duplicated in a table to quickly gather random them for mixins.
 
-*If at this state you're lost, you might want to go check the Monero documentation.*
+*If at this state you're lost, you might want to go check the Monero documentation. Speificly the Blockchain part*
 
 ### BlockchainDB Abstraction
 

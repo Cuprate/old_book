@@ -1,5 +1,7 @@
 ## LMDB Tables
 
+> Be aware that the current database schema might chance when Seraphis will be implemented. See: [https://github.com/seraphis-migration/wallet3/issues/11](https://github.com/seraphis-migration/wallet3/issues/11)
+
 Monerod use simple tables for storing blob. But metadata are often stored on tables with dummy keys. Such tables are declared with DUPSORT & DUPFIXED flags. DUPSORT is a flag for the database to support duplicated data, DUPFIXED is used when the key is of a fixed size, to gain place
 (8 bytes per key).
 
@@ -25,7 +27,7 @@ Here's an explanation of all used flags from the [lmdb crate documentation](http
 ### blocks
 ***
 **Flags**: MDB_INTEGERKEY</br>
-**Key**: Block's height as `uint_64t` (8 bytes)</br>
+**Key**: Block's height as `uint64_t` (8 bytes)</br>
 **Value**: Block bytes as `cryptonote::Blobdata` (Dynamic size).</br>
 
 This table store the entire blocks. They can be accessed through their height
@@ -33,8 +35,8 @@ This table store the entire blocks. They can be accessed through their height
 ### blocks_heights
 ***
 **Flags**: MDB_INTEGERKEY | MDB_DUPSORT | MDB_DUPFIXED</br>
-**Subkey**: Block's Keccak-256 Hash (32 bytes)</br>
-**Value**: Block's height as a 64bit unsigned integer, `uint_64t` (8 bytes).</br>
+**Subkey**: Block's Keccak-256 Hash as `char [32]` (32 bytes)</br>
+**Value**: Block's height as a 64bit unsigned integer, `uint64_t` (8 bytes).</br>
 
 This table define a relation for finding a block height based on its Keccak-256 Hash. The first version was a simple table
 but the new one store through Duplicated data :
@@ -47,14 +49,162 @@ but the new one store through Duplicated data :
 ### blocks_info
 ***
 **Flags**: MDB_INTEGERKEY | MDB_DUPSORT | MDB_DUPFIXED</br>
-**Subkey**: Block's height as `uint_64t` (8 bytes)</br>
+**Subkey**: Block's height as `uint64_t` (8 bytes)</br>
 **Value**: Block's metadata as `mdb_block_info_4` (96 bytes).</br>
 
 This table store block's metadata. See types subchapter for more details about it.
 
-todo()!
-
 ### txs
 ***
-**Subkey**: Block's Keccak-256 Hash (32 bytes)</br>
-**Value**: Block's height as a 64bit unsigned integer, `uint_64t` (8 bytes).</br>
+**Flags**: MDB_INTEGERKEY</br>
+**Key**: Transaction's ID as `uint64_t` (8 bytes)</br>
+**Value**: Transaction's bytes as `cryptonote::Blobdata` (Dynamic size).</br>
+
+This table was originally used to store transactions but has been deprecated in favor of txs_pruned,txs_prunable and txs_indices tables.
+
+### txs_pruned
+***
+**Flags**: MDB_INTEGERKEY</br>
+**Key**: Transaction's ID as `uint64_t` (8 bytes)</br>
+**Value**: Transaction's Pruned part as `cryptonote::Blobdata` (Dynamic size).</br>
+
+Used to store Pruned part of transaction (Prefix + RingCT Signature)
+
+### txs_prunable
+***
+**Flags**: MDB_INTEGERKEY</br>
+**Key**: Transaction's ID as `uint64_t` (8 bytes)</br>
+**Value**: Transaction's prunable part as `cryptonote::Blobdata` (Dynamic size).</br>
+
+Used to store prunable part of transaction (Signatures)
+
+### txs_prunable_hash
+***
+**Flags**: MDB_INTEGERKEY | MDB_DUPSORT | MDB_DUPFIXED</br>
+**Subkey**: Transaction's ID as `uint64_t`(8 bytes)</br>
+**Value**: Transaction's prunable part hash as `char [32]` (32 bytes).</br>
+
+Store hash of prunable part of transactions (an hash of the signatures blob).
+
+### txs_prunable_tip
+***
+**Flags**: MDB_INTEGERKEY | MDB_DUPSORT | MDB_DUPFIXED</br>
+**Subkey**: Transaction's ID as `uint64_t` (8 bytes)</br>
+**Value**: Blocks height as `uint64_t` (8 bytes).</br>
+
+This table is used for optimization purpose. It defines at which block's height this transaction belong.
+
+
+### txs_indices
+***
+**Flags**: MDB_INTEGERKEY | MDB_DUPSORT | MDB_DUPFIXED</br>
+**Subkey**: Transaction's Hash as `char [32]`(8 bytes)</br>
+**Value**: Transaction's ID and unlock time as `{uint64_t, uint64_t}` (16 bytes).</br>
+
+This table define the relation between transaction's hash (that can be found in blocks) and its transaction ID and unlock time.
+
+### txs_outputs
+***
+**Flags**: MDB_INTEGERKEY</br>
+**Key**: Transaction's ID as `uint64_t` (8 bytes)</br>
+**Value**: Transaction's outputs indices (amount and amount idx) as a `vector` of `(uint64_t,uint64t)` (Dynamic Size)</br>
+
+This table is used to quickly retrieve outputs of a specific transaction.
+
+### output_txs
+***
+**Flags**: MDB_INTEGERKEY | MDB_DUPSORT | MDB_DUPFIXED</br>
+**Subkey**: Output's global index (database-only type) as `uint64_t` (8 bytes)</br>
+**Value**: Transaction's hash and output's local index as `(char [32], uint64_t)` (40 bytes).</br>
+
+This table is used to retrieve an ouput's transaction and its corresponding local index in this transaction.
+
+### output_amounts
+***
+**Flags**: MDB_INTEGERKEY | MDB_DUPSORT | MDB_DUPFIXED</br>
+**Key**: Output's amount as `uint64_t` (8 bytes)</br>
+**Subkey**: Output's amount index as `uint64_t` (8 bytes)</br>
+**Value**: Output's metadata as `output_data_t` (PreRCT: 42 bytes, PostRCT: 80 bytes).</br>
+
+This table store the actual output data. Before RingCT, the outputs was sorted by their amount and then their local index for this specific amount. (this is why there is a Key **and** a Subkey). All post-RingCT output have an amount of 0 and are therefore stored under the zero key.
+
+### spent_keys
+***
+**Flags**: MDB_INTEGERKEY | MDB_DUPSORT | MDB_DUPFIXED</br>
+**Subkey**: Output's key image</br>
+**Value**: None (0 bytes).</br>
+
+This table exist to keep track of spent key image. It is used for quickly procede at the decoys selection.
+
+### alt_blocks
+***
+**Flags**: None</br>
+**Key**: Alternative Block's hash as `char [32]` (32 bytes)</br>
+**Value**: AltBlock's metadata and blob as `{alt_block_data_t, cryptonote::Blobdata}` (40 bytes + Dynamic size)</br>
+
+Used to store alternative blocks broadcasted in the network, since they might (if the required difficulty is achieved) reorganize the mainchain.
+
+### txpoool_meta
+***
+**Flags**: None</br>
+**Key**: Transaction's Keccak-256 hash as `char [32]` (32 bytes)</br>
+**Value**: Transaction's metadata as `txpool_meta_t` (192 bytes)</br>
+
+This table store the metadata of transactions currently in the transaction pool.
+
+### txpoool_blob
+***
+**Flags**: None</br>
+**Key**: Transaction's Keccak-256 hash as `char [32]` (32 bytes)</br>
+**Value**: Transaction's blob as `cryptonote::Blobdata` (Dynamic size)</br>
+
+This table store the bytes of transactions currently in the transaction pool.
+
+All flags has been extracted from the `BlockchainLMDB::open()` function in `db_lmdb.cpp`:
+```cpp
+void BlockchainLMDB::open(const std::string& filename, const int db_flags)
+{
+  
+  ...
+
+  // open necessary databases, and set properties as needed
+  // uses macros to avoid having to change things too many places
+  // also change blockchain_prune.cpp to match
+  lmdb_db_open(txn, LMDB_BLOCKS, MDB_INTEGERKEY | MDB_CREATE, m_blocks, "Failed to open db handle for m_blocks");
+
+  lmdb_db_open(txn, LMDB_BLOCK_INFO, MDB_INTEGERKEY | MDB_CREATE | MDB_DUPSORT | MDB_DUPFIXED, m_block_info, "Failed to open db handle for m_block_info");
+  lmdb_db_open(txn, LMDB_BLOCK_HEIGHTS, MDB_INTEGERKEY | MDB_CREATE | MDB_DUPSORT | MDB_DUPFIXED, m_block_heights, "Failed to open db handle for m_block_heights");
+
+  lmdb_db_open(txn, LMDB_TXS, MDB_INTEGERKEY | MDB_CREATE, m_txs, "Failed to open db handle for m_txs");
+  lmdb_db_open(txn, LMDB_TXS_PRUNED, MDB_INTEGERKEY | MDB_CREATE, m_txs_pruned, "Failed to open db handle for m_txs_pruned");
+  lmdb_db_open(txn, LMDB_TXS_PRUNABLE, MDB_INTEGERKEY | MDB_CREATE, m_txs_prunable, "Failed to open db handle for m_txs_prunable");
+  lmdb_db_open(txn, LMDB_TXS_PRUNABLE_HASH, MDB_INTEGERKEY | MDB_DUPSORT | MDB_DUPFIXED | MDB_CREATE, m_txs_prunable_hash, "Failed to open db handle for m_txs_prunable_hash");
+  if (!(mdb_flags & MDB_RDONLY))
+    lmdb_db_open(txn, LMDB_TXS_PRUNABLE_TIP, MDB_INTEGERKEY | MDB_DUPSORT | MDB_DUPFIXED | MDB_CREATE, m_txs_prunable_tip, "Failed to open db handle for m_txs_prunable_tip");
+  lmdb_db_open(txn, LMDB_TX_INDICES, MDB_INTEGERKEY | MDB_CREATE | MDB_DUPSORT | MDB_DUPFIXED, m_tx_indices, "Failed to open db handle for m_tx_indices");
+  lmdb_db_open(txn, LMDB_TX_OUTPUTS, MDB_INTEGERKEY | MDB_CREATE, m_tx_outputs, "Failed to open db handle for m_tx_outputs");
+
+  lmdb_db_open(txn, LMDB_OUTPUT_TXS, MDB_INTEGERKEY | MDB_CREATE | MDB_DUPSORT | MDB_DUPFIXED, m_output_txs, "Failed to open db handle for m_output_txs");
+  lmdb_db_open(txn, LMDB_OUTPUT_AMOUNTS, MDB_INTEGERKEY | MDB_DUPSORT | MDB_DUPFIXED | MDB_CREATE, m_output_amounts, "Failed to open db handle for m_output_amounts");
+
+  lmdb_db_open(txn, LMDB_SPENT_KEYS, MDB_INTEGERKEY | MDB_CREATE | MDB_DUPSORT | MDB_DUPFIXED, m_spent_keys, "Failed to open db handle for m_spent_keys");
+
+  lmdb_db_open(txn, LMDB_TXPOOL_META, MDB_CREATE, m_txpool_meta, "Failed to open db handle for m_txpool_meta");
+  lmdb_db_open(txn, LMDB_TXPOOL_BLOB, MDB_CREATE, m_txpool_blob, "Failed to open db handle for m_txpool_blob");
+
+  lmdb_db_open(txn, LMDB_ALT_BLOCKS, MDB_CREATE, m_alt_blocks, "Failed to open db handle for m_alt_blocks");
+
+  // this subdb is dropped on sight, so it may not be present when we open the DB.
+  // Since we use MDB_CREATE, we'll get an exception if we open read-only and it does not exist.
+  // So we don't open for read-only, and also not drop below. It is not used elsewhere.
+  if (!(mdb_flags & MDB_RDONLY))
+    lmdb_db_open(txn, LMDB_HF_STARTING_HEIGHTS, MDB_CREATE, m_hf_starting_heights, "Failed to open db handle for m_hf_starting_heights");
+
+  lmdb_db_open(txn, LMDB_HF_VERSIONS, MDB_INTEGERKEY | MDB_CREATE, m_hf_versions, "Failed to open db handle for m_hf_versions");
+
+  lmdb_db_open(txn, LMDB_PROPERTIES, MDB_CREATE, m_properties, "Failed to open db handle for m_properties");
+
+  ...
+
+}
+```
