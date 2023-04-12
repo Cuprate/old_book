@@ -4,8 +4,8 @@
 # Monero
 - [Overview of monerod database](cuprate/database/monerod/monerod_database.md)
 	- [Tables](cuprate/database/monerod/tables.md)
-	- [Errors]()
-	- [Types]()
+	- [Errors](cuprate/database/monerod/errors.md)
+	- [Types](cuprate/database/monerod/types.md)
 	- [Macros]()
 # Cuprate
 - [The Database](cuprate/database/intro.md)

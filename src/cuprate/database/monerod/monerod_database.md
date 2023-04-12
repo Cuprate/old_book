@@ -72,9 +72,9 @@ Here's a kind message from the developers that is definitely going to help us un
 
 *If at this state you're lost, you might want to go check the Monero documentation. Speificly the Blockchain part*
 
-### BlockchainDB Abstraction
+### BlockchainDB Interface
 
-Any database implementation in monerod is based on the C++ object **BlockchainDB** (see `blockchain_db/blockchain_db.h|.cpp`). Any database engine can be used in Monerod as long as it implement the private member of BlockchainDB, giving to the rest of the node a variety of useful functions.
+Any database implementation in monerod is based on the C++ class **BlockchainDB** (see `blockchain_db/blockchain_db.h|.cpp`). Any database engine can be used in Monerod as long as it implement the private member of BlockchainDB, giving to the rest of the node a variety of useful functions.
 Here's the description from monerod of BlockchainDB:
 
 ```cpp
@@ -92,7 +92,7 @@ Here's the description from monerod of BlockchainDB:
  */
 class BlockchainDB
 ```
-BlockchainDB take for unified error interface DB_EXCEPTION, another C++ object that inherit the std error class:
+BlockchainDB take for unified error interface DB_EXCEPTION, another C++ class that inherit the standard C++ error class:
 ```cpp
 /**
  * @brief A base class for BlockchainDB exceptions

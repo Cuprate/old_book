@@ -1,6 +1,6 @@
 ## LMDB Tables
 
-> Be aware that the current database schema might chance when Seraphis will be implemented. See: [https://github.com/seraphis-migration/wallet3/issues/11](https://github.com/seraphis-migration/wallet3/issues/11)
+> Be aware that the current database schema might change when Seraphis will be implemented. See: [https://github.com/seraphis-migration/wallet3/issues/11](https://github.com/seraphis-migration/wallet3/issues/11)
 
 Monerod use simple tables for storing blob. But metadata are often stored on tables with dummy keys. Such tables are declared with DUPSORT & DUPFIXED flags. DUPSORT is a flag for the database to support duplicated data, DUPFIXED is used when the key is of a fixed size, to gain place
 (8 bytes per key).
