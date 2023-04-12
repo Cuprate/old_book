@@ -144,7 +144,7 @@ This table exist to keep track of spent key image. It is used for quickly proced
 
 Used to store alternative blocks broadcasted in the network, since they might (if the required difficulty is achieved) reorganize the mainchain.
 
-### txpoool_meta
+### txpool_meta
 ***
 **Flags**: None</br>
 **Key**: Transaction's Keccak-256 hash as `char [32]` (32 bytes)</br>
@@ -152,13 +152,55 @@ Used to store alternative blocks broadcasted in the network, since they might (i
 
 This table store the metadata of transactions currently in the transaction pool.
 
-### txpoool_blob
+### txpool_blob
 ***
 **Flags**: None</br>
 **Key**: Transaction's Keccak-256 hash as `char [32]` (32 bytes)</br>
 **Value**: Transaction's blob as `cryptonote::Blobdata` (Dynamic size)</br>
 
 This table store the bytes of transactions currently in the transaction pool.
+
+### hf_versions
+***
+**Flags**: MDB_INTEGERKEY</br>
+**Key**: Block's height as `uint64_t`(8 bytes)</br>
+**Value**: HardFork version of this block as `uint8_t`(1 byte)</br>
+
+This table keep track of hard fork versions of blocks in the blockchain.
+
+### hf_starting_heights
+***
+**Flags**: None</br>
+**Key**: HardFork version as `uint8_t` (1 byte)</br>
+**Value**: Starting height of the hardfork as `uint64_t` (8 bytes)</br>
+
+This table was used to store hardfork starting height. But it was deprecated, since these were hardcoded into the node. In fact, if a node get a block with an unknown hardfork version, it automatically discard it.
+
+### properties
+***
+
+This table is used to store the pruning seed and database version:</br>
+**Key**: *version* -> **Value**: version of the database as `uint32_t`</br>
+**Key**: *pruning_seed* -> **Value**: pruning seed as `uint32_t`</br>
+Version is defined as follow in `db_lmdb.cpp`:
+
+```cpp
+#define VERSION 5
+#define MDB_val_str(var, val) MDB_val var = {strlen(val) + 1, (void *)val}
+
+/* ... */
+
+  MDB_val_str(k, "version"); // MDB_val k = {strlen("version") + 1, (void *)"version"}
+  MDB_val v;
+  auto get_result = mdb_get(txn, m_properties, &k, &v);
+```
+And the pruning seed key is :
+```cpp
+MDB_val_str(k, "pruning_seed"); // MDB_val k = {strlen("pruning_seed") + 1, (void *)"pruning_seed"}
+```
+</br>
+</br>
+</br>
 
 All flags has been extracted from the `BlockchainLMDB::open()` function in `db_lmdb.cpp`:
 ```cpp
