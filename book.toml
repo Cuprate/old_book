@@ -5,3 +5,6 @@ multilingual = false
 src = "src"
 title = "Cuprate Docs"
 description = "This book covers Cuprate and Monero protocol documentation."
+
+[output.html]
+mathjax-support = true
