@@ -6,7 +6,7 @@
 	- [Tables](cuprate/database/monerod/tables.md)
 	- [Errors](cuprate/database/monerod/errors.md)
 	- [Types](cuprate/database/monerod/types.md)
-	- [Macros]()
+	- [Macros](cuprate/database/monerod/macros.md)
 # Cuprate
 - [The Database](cuprate/database/intro.md)
 	- [Design difference]()

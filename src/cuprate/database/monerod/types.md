@@ -1,6 +1,6 @@
 ## Database structures and types
 
-Tables in monerod store data as data structures or types. Some are defined in `blockchain_db.h` other in `db_lmdb.h` and `db_lmdb.cpp`. This chapter try to bring details on each data structures purpose.
+Tables in monerod store data as data structures or types. Some are defined in `blockchain_db.h` other in `db_lmdb.h` and `db_lmdb.cpp`. This chapter try to bring details on each data structures and purpose.
  
 Notes: 
 - `#pragma pack()` is used to gain place in memory. See [this StackOverflow answer](http://stackoverflow.com/questions/3318410/ddg#3318475) for explanation.
