@@ -1,4 +1,4 @@
-# Cuprate Documentation  
+# Cuprate's Book  
 
 ## About 
 
