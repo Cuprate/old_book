@@ -2,11 +2,11 @@
 [Introduction](README.md)
 
 # Monero
-- [Overview of monerod database](cuprate/database/monerod/monerod_database.md)
-	- [Tables](cuprate/database/monerod/tables.md)
-	- [Errors](cuprate/database/monerod/errors.md)
-	- [Types](cuprate/database/monerod/types.md)
-	- [Macros](cuprate/database/monerod/macros.md)
+- [Overview of monerod database](monero/database/monerod_database.md)
+	- [Tables](monero/database/tables.md)
+	- [Errors](monero/database/errors.md)
+	- [Types](monero/database/types.md)
+	- [Macros](monero/database/macros.md)
 # Cuprate
 - [The Database](cuprate/database/intro.md)
 	- [Design difference]()
