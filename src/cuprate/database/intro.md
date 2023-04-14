@@ -6,4 +6,4 @@ While we could idiomatically implement a simple folder with a file for each bloc
 How do we implement the database ? what storage engine to use ? what are the underlying separation between data ?
 These are all important questions that play a role in the efficiency or performance of a node.
 
-The ongoing chapters explain monerod and cuprate's database design, how it diverges and why we made our choices. It could use general concept of Monero that can't be shortly re-explain. In this case, we'll just leave a link to the corresponding documentation in Monero's part of the book.
+The ongoing chapters explain cuprate's database design, how it diverges from monerod and why we made our choices. It could use general concept of Monero that can't be shortly re-explain. In this case, we'll just leave a link to the corresponding documentation in Monero's part of the book.
