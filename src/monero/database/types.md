@@ -4,7 +4,7 @@ Tables in monerod store data as data structures or types. Some are defined in `b
  
 Notes: 
 - `#pragma pack()` is used to gain place in memory. See [this StackOverflow answer](http://stackoverflow.com/questions/3318410/ddg#3318475) for explanation.
-- [cumulative difficulty has been set as a 128bit integer](https://github.com/monero-project/monero/pull/5239), so difficulty_low means the first lower 64bit, difficulty_high means the upper 64bit.
+- [cumulative difficulty has been set as a 128bit integer](https://github.com/monero-project/monero/pull/5239), so difficulty_low means the first lower 64bit, difficulty_high means the upper 64bit, although through out the code base these names might be slightly different.
 
 
 ### blockchain_db.h
@@ -167,7 +167,7 @@ typedef struct mdb_block_info_4
 
 typedef mdb_block_info_4 mdb_block_info;
 ```
-This data structure store block's metadata. Used in `block_info` table. This is the 4th version but the older types are still defined.
+This data structure store block's metadata. Used in `block_info` table. This is the 4th version but the older types are still defined so old databases can update.
 
 #### pre_rct_outkey & pre_rct_output_data_t
 
@@ -198,7 +198,7 @@ typedef struct outkey {
     output_data_t data;
 } outkey;
 ```
-Exactly the same as `pre_rct_outkey` except, it contains an `output_data_t` which is add the RingCT Key commitment.
+Exactly the same as `pre_rct_outkey` except, it contains an `output_data_t` which is add the RingCT amount commitment.
 
 #### outtx
 

@@ -1,6 +1,6 @@
 ## Overview of monerod database
 
-To better understand similarities between Cuprate's database and Monerod one, we first need to take a look at the latter. This chapter is just an overview, for more details on each components being addressed see the corresponding sub-chapter.
+> This chapter is just an overview, for more details on each components being addressed see the corresponding sub-chapter.
 
 ***
 
@@ -68,9 +68,7 @@ Here's a kind message from the developers that is definitely going to help us un
  */
 ```
 
-**TL;DR**: For storage efficiency, object identifier used as database key are mapped as 64-bit integer. A Block ID is its height. For optimal performance a lot of data are duplicated into different tables to accelerate gathering by not having to deserialize an entire block if we just want an Output's commitment for example. Spent key images are duplicated to quickly verify if it's been spent. Unspent Outputs are duplicated in a table to quickly gather random ones for mixins.
-
-*If at this state you're lost, you might want to go check the Monero documentation. Speificly the Blockchain part*
+**TL;DR**: For storage efficiency, object identifier used as database key are mapped as 64-bit integer. A Block ID is its height. For optimal performance a lot of data are duplicated into different tables to accelerate gathering by not having to deserialize an entire transaction if we just want an Output's commitment for example. Spent key images are duplicated to quickly check for and prevent double spends. Unspent Outputs are duplicated in a table to quickly gather random ones for mixins.
 
 ### BlockchainDB Interface
 
@@ -101,7 +99,7 @@ BlockchainDB take for unified error interface DB_EXCEPTION, another C++ class th
 ```
 **See [Errors](errors.md) for more details about DB_EXCEPTION**
 
-And this is it. This two definitions are the only one needed for implementing another database engine for monerod. This abstraction has been made to simplify database call in the rest of the node but also add modularity. How the data are stored is up to the specific implementation. Fortunately for us their is only one to explain.
+And this is it. These two definitions are the only ones needed to implement another database engine for monerod. This abstraction has been made to simplify database call in the rest of the node but also add modularity. How the data are stored is up to the specific implementation. Fortunately for us there is only one to explain.
 
 ### LMDB Implementation
 
@@ -148,9 +146,9 @@ You can find a comment on it in `db_lmdb.cpp`:
  * The output_amounts table doesn't use a dummy key, but uses DUPSORT.
  */
 ```
-At first glance you might think that this is detailed and complete (and if you perfectly understand congratulation, you're a core dev), but if you, like me, started discovering the node by its database, you'll quickly ask yourself dumb questions such as : 
+At first glance you might think that this is detailed and complete (and if you perfectly understand congratulations, you're a core dev), but if you, like me, started discovering the node by its database, you'll quickly ask yourself dumb questions such as: 
 
-*block ID is an height, why not  just put "block height" in the Key column then ?*, *Block blob means it is block bytes, this means there is other data that aren't encoded, its not.* *Ok {...} means it is a struct, but which struct?* *what is a dummy key?* *Why "{block metadata}" but then "txn metadata",txpool don't put metadata in a struct?* *[...] means its an array or a tuple ????* *Can I have an explanation of each table purpose?*
+*block ID is an height, why not  just put "block height" in the Key column then?*, *Block blob means it is block bytes, this means there is other data that aren't encoded, there aren't.* *Ok {...} means it is a struct, but which struct?* *what is a dummy key?* *Why "{block metadata}" but then "txn metadata",txpool don't put metadata in a struct?* *[...] means its an array or a tuple ????* *Can I have an explanation of each table purpose?*
 
 Anyway, you might not see it before looking right under this comment, but there is 3 more tables : 
 ```cpp
@@ -183,8 +181,8 @@ const char* const LMDB_PROPERTIES = "properties";
 
 And if you don't know what is a "zerokval" dummy key, here's an explanation: 
 
-Normally, key-value database permit the access of a value through its key. But imagine if we want multiple values for the same key, how do we procede ? Here's come the cursors, cursors are capable of iterating over duplicated data placed under the same key. A very cool
-feature of LMDB is that you can get a data not just by iterating them until finding the good one, but give the prefix of the data you attend to receive. If you do that LMDB return the first (or nearest) duplicated value that have these first bytes you give him earlier. So an optimization to gain space, is to use a *dummy key*. For monerod it is 8 null bytes placed as the only key in the table. Every data will be placed under this dummy key. When you want to get a specific data, you just have to place the cursor under this key and give him the prefix of this data, which, in practice, act as the *real key*. 
+Normally, key-value database map the access of a value through its key. But imagine if we want multiple values for the same key, how do we proceed? Here comes the cursors, cursors are capable of iterating over duplicated data placed under the same key. A very cool
+feature of LMDB is that you can get a data not just by iterating them until finding the one you want, but you can give the prefix of the data you want to receive. If you do that LMDB returns the value that has these first bytes you give it. So an optimization to gain space, is to use a *dummy key*. For monerod it is 8 empty (zero) bytes placed as the only key in the table. Every data will be placed under this dummy key. When you want to get specific data, you just have to place the cursor under this key and give LMDB the prefix of the data, which, in practice, acts as the *real key*. 
 
 **See [Tables](tables.md) subchapter for details of all tables**
 

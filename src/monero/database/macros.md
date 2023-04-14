@@ -33,7 +33,7 @@ The `TXN_PREFIX(flags)` macros is used to open a ReadWrite lmdb transaction with
 #define TXN_POSTFIX_RDONLY()
 ```
 
-The `TXN_PREFIX_RDONLY()` macros is used to open a ReadOnly lmdb transaction. It open a pointer to the list of cursors (`m_cursors`).
+The `TXN_PREFIX_RDONLY()` macros is used to open a ReadOnly lmdb transaction. It opens a pointer to the list of cursors (`m_cursors`).
 
 #### POSTFIX
 
@@ -47,7 +47,7 @@ The `TXN_PREFIX_RDONLY()` macros is used to open a ReadOnly lmdb transaction. It
   } while(0)
 ```
 
-The `TXN_POSTFIX_RDONLY` macros is used to commit() the transaction when the database have finished its write batch.
+The `TXN_POSTFIX_RDONLY` macros is used to commit() the transaction when the database has finished its write batch.
 
 #### BLOCKING TXN
 
@@ -137,4 +137,4 @@ private:
   T t_copy;
 };
 ```
-This function permit to copy any type that implement this template into a `MDB_val` struct.
+This function allows you to copy any type that implements this template into a `MDB_val` struct.

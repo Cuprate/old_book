@@ -1,17 +1,23 @@
 ## LMDB Tables
 
-> Be aware that the current database schema might change when Seraphis will be implemented. See: [https://github.com/seraphis-migration/wallet3/issues/11](https://github.com/seraphis-migration/wallet3/issues/11)
+> Be aware that the current database schema might change when Seraphis is implemented. See: [https://github.com/seraphis-migration/wallet3/issues/11](https://github.com/seraphis-migration/wallet3/issues/11)
 
-Monerod store every type of dynamic size under simple key-value tables. But any constant sized items (such as block's metadata for example) are stored as duplicated values in tables using dummy keys. Such tables are declared with DUPSORT & DUPFIXED flags. DUPSORT is a flag for the database to support duplicated data, DUPFIXED is used when the key is of a fixed size, to gain place
+Monerod stores every type of dynamic size in simple key-value tables. But any constant sized items (such as block's metadata for example) are stored as duplicated values in tables using dummy keys. Such tables are declared with DUPSORT & DUPFIXED flags. DUPSORT is a flag for the database to support duplicated data, DUPFIXED is used when the key is of a fixed size, to gain space
 (8 bytes per key).
 
-When talking about Subkey in this chapter, you must understand that the table use a dummy key and that the Subkey used to retrieve data is the first bytes, or prefix, of this data monerod is trying to get.
+When talking about Subkey in this chapter, you must understand that the table use a dummy key and that the Subkey used to retrieve data is the first bytes, or prefix, of this data monerod is trying to get and the "main key" is the dummy key.
+
+##### Normal table:
+
 ```
-Normal table:
 Key -> Value
-Duplicate Table:
+```
+
+##### Duplicate Table:
+
+```
 Dummykey -> {Subkey, Value}
-The subkey is the first bytes of the data it tried to store.
+The subkey is the first bytes of the value that is stored.
 ```
 
 Here's an explanation of all used flags from the [lmdb crate documentation](https://docs.rs/lmdb/latest/lmdb/struct.DatabaseFlags.html):
@@ -60,7 +66,7 @@ This table store block's metadata. See types subchapter for more details about i
 **Key**: Transaction's ID as `uint64_t` (8 bytes)</br>
 **Value**: Transaction's bytes as `cryptonote::Blobdata` (Dynamic size).</br>
 
-This table was originally used to store transactions but has been deprecated in favor of txs_pruned,txs_prunable and txs_indices tables.
+This table was originally used to store transactions but has been deprecated in favor of txs_pruned and txs_prunable tables.
 
 ### txs_pruned
 ***
@@ -68,7 +74,7 @@ This table was originally used to store transactions but has been deprecated in 
 **Key**: Transaction's ID as `uint64_t` (8 bytes)</br>
 **Value**: Transaction's Pruned part as `cryptonote::Blobdata` (Dynamic size).</br>
 
-Used to store Pruned part of transaction (Prefix + RingCT Signature)
+Used to store Pruned part of transaction.
 
 ### txs_prunable
 ***
@@ -76,7 +82,7 @@ Used to store Pruned part of transaction (Prefix + RingCT Signature)
 **Key**: Transaction's ID as `uint64_t` (8 bytes)</br>
 **Value**: Transaction's prunable part as `cryptonote::Blobdata` (Dynamic size).</br>
 
-Used to store prunable part of transaction (Signatures)
+Used to store prunable part of transaction (Signatures).
 
 ### txs_prunable_hash
 ***
@@ -92,7 +98,9 @@ Store hash of prunable part of transactions (an hash of the signatures blob).
 **Subkey**: Transaction's ID as `uint64_t` (8 bytes)</br>
 **Value**: Blocks height as `uint64_t` (8 bytes).</br>
 
-This table is used for optimization purpose. It defines at which block's height this transaction belong.
+This table stores the height for a transaction if that transaction is withing a certain amount of non-pruned tip blocks.
+
+Tip blocks are blocks at the top of the chain currently 5500 that won't get pruned. 
 
 
 ### txs_indices
@@ -134,7 +142,7 @@ This table store the actual output data. Before RingCT, the outputs was sorted b
 **Subkey**: Output's key image</br>
 **Value**: None (0 bytes).</br>
 
-This table exist to keep track of spent key image. It is used for quickly procede at the decoys selection.
+This table exist to keep track of spent key image. It is used to quickly check for double spends.
 
 ### alt_blocks
 ***
