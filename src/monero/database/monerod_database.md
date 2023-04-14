@@ -68,7 +68,13 @@ Here's a kind message from the developers that is definitely going to help us un
  */
 ```
 
-**TL;DR**: For storage efficiency, object identifier used as database key are mapped as 64-bit integer. A Block ID is its height. For optimal performance a lot of data are duplicated into different tables to accelerate gathering by not having to deserialize an entire transaction if we just want an Output's commitment for example. Spent key images are duplicated to quickly check for and prevent double spends. Unspent Outputs are duplicated in a table to quickly gather random ones for mixins.
+**TL;DR**: For optimal performance a lot of data are duplicated into different tables to accelerate gathering by not having to deserialize an entire transaction if we just want an Output's commitment for example. Spent key images are duplicated to quickly check for and prevent double spends. Unspent Outputs are duplicated in a table to quickly gather random ones for mixins.
+For storage efficiency, object identifier used as database key are mapped as 64-bit integer : 
+- A Block ID is its height. 
+- A Tx ID is its N th canonical place in the blockchain. So the 100th transaction in monero history have a tx id of 100
+- An amount output index, is its N th place in the list of outputs with this amount. If a transaction had to use the 152th output with an amount
+of 5 XMR in monero history, the amount output index of this output would be 152.
+- An output local index, is its N th place in the list of outputs used in a specific tx.
 
 ### BlockchainDB Interface
 
