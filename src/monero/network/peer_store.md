@@ -40,7 +40,7 @@ Periodically monerod will [ping](admin_protocol.md#ping) gray list peers to chec
 
 ## Handle Remote Peer List 
 
-This is used when a node receives a peer list from a connected peer. The node will first check if The list contains more than the max allowed in one message if it does the peer will be dropped the max value is currently:
+This is used when a node receives a peer list from a connected peer. The node will first check if The list contains more than the max allowed peers in one message if it does the peer will be dropped the max value is currently:
 ```c++
 #define P2P_DEFAULT_PEERS_IN_HANDSHAKE                  250
 ```
@@ -55,4 +55,4 @@ Next a function called `sanitize_peerlist` is called which:
 
 The node will then check that every received peer is from the correct "zone" (Public|Tor|I2p) if one isn't we ignore the whole peer list and drop the peer that sent the list. 
 
-The remaining peers are, if not already in our peer list(s), will be inserted into out gray list.
+The remaining peers are, if not already in our peer list(s),  inserted into out gray list.
