@@ -82,7 +82,7 @@ struct alt_block_data_t
   uint64_t already_generated_coins;
 };
 ```
-A data structure used in the `alt_block` table to keep track of important metadata for alternative blocks. Essentialy what is mandatory to
+A data structure used in the `alt_block` table to keep track of important metadata for alternative blocks. Essentially what is mandatory to
 decide wether this block lead to reorganize the mainchain or not.
 
 #### output_data_t
@@ -209,7 +209,7 @@ typedef struct outtx {
     uint64_t local_index;
 } outtx;
 ```
-Used in `output_txs` table. Just a tuple of output's transaction hash and its local index.
+Used in `output_txs` table.
 
 ### db_lmdb.h
 ***

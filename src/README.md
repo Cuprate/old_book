@@ -12,7 +12,7 @@ also general Monero documentation. As the original node lacks clarity in some ar
 The two documentations are made to be read together. 
 
 If you believe that there is an error somewhere or something
-seems difficult to understand, please let us know in the issues section
+seems difficult to understand, please let us know in the issues section.
 
 ## Support
 
@@ -25,4 +25,4 @@ sent to this address will be used for **FUTURE** development only:
 
 **82rrTEtqbEa7GJkk7WeRXn67wC3acqG5mc7k6ce1b37jTdv5uM15gJa3vw7s4fDuA31BEufjBj2DzZUb42UqBaP23APEujL**
 
-<div align=center><img src="https://raw.githubusercontent.com/Cuprate/cuprate/best-readme-ever/qr-code.png"></img></div>
+<div align=center><img src="https://github.com/Cuprate/cuprate/blob/main/qr-code.png"></img></div>

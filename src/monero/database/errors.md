@@ -2,7 +2,7 @@
 
 Monerod's database implements an error template called `DB_EXCEPTION` (see `blockchain_db.h`). This class permits the node to identify errors from the database and react accordingly to these events. This chapter is just to bring some details on each error:
 
-The **DB_EXCEPTION** Definition : 
+The **DB_EXCEPTION** Definition: 
 ```cpp
 /**
  * @brief A base class for BlockchainDB exceptions
@@ -38,6 +38,7 @@ class DB_ERROR : public DB_EXCEPTION
     DB_ERROR(const char* s) : DB_EXCEPTION(s) { }
 };
 ```
+
 This error is returned whenever lmdb failed to do an operation, such as opening a table, put, get. You'll likely find it in the following format:
 `DB_ERROR(lmdb_error("message from the dev explaining what operation failed"))`
 
@@ -54,6 +55,7 @@ class DB_ERROR_TXN_START : public DB_EXCEPTION
     DB_ERROR_TXN_START(const char* s) : DB_EXCEPTION(s) { }
 };
 ```
+
 Only used in `batch_abort()`,`block_rtxn_start()`,`block_wtxn_start()`,`block_wtxn_stop()`,`block_wtxn_abort()` and `add_block`. 
 
 ### DB_OPEN_FAILURE
@@ -69,7 +71,9 @@ class DB_OPEN_FAILURE : public DB_EXCEPTION
     DB_OPEN_FAILURE(const char* s) : DB_EXCEPTION(s) { }
 };
 ```
+
 This error is returned throw when monerod isn't able to create the database directory (insufficient permissions), when the database is already opened by another process (lmdb lock) or when it is corrupted.
+
 ```cpp
 ...
 throw0(cryptonote::DB_OPEN_FAILURE((lmdb_error(error_string + " : ", res) + std::string(" - you may want to start with --db-salvage")).c_str()));
@@ -92,6 +96,7 @@ class DB_CREATE_FAILURE : public DB_EXCEPTION
     DB_CREATE_FAILURE(const char* s) : DB_EXCEPTION(s) { }
 };
 ```
+
 Not in use.
 
 ### DB_SYNC_FAILURE
@@ -107,6 +112,7 @@ class DB_SYNC_FAILURE : public DB_EXCEPTION
     DB_SYNC_FAILURE(const char* s) : DB_EXCEPTION(s) { }
 };
 ```
+
 Not in use.
 
 ### BLOCK_DNE
@@ -122,6 +128,7 @@ class BLOCK_DNE : public DB_EXCEPTION
     BLOCK_DNE(const char* s) : DB_EXCEPTION(s) { }
 };
 ```
+
 Used everywhere a block wasn't found.
 
 ### BLOCK_PARENT_DNE
@@ -137,7 +144,9 @@ class BLOCK_PARENT_DNE : public DB_EXCEPTION
     BLOCK_PARENT_DNE(const char* s) : DB_EXCEPTION(s) { }
 };
 ```
+
 Only used one time in `add_block()` function when the referenced parent of the block isn't the previous one in blockchain canonical order. Block N must have Block N-1 as the parent.
+
 ```cpp
     blk_height *prev = (blk_height *)parent_key.mv_data;
     if (prev->bh_height != m_height - 1)
@@ -157,7 +166,9 @@ class BLOCK_EXISTS : public DB_EXCEPTION
     BLOCK_EXISTS(const char* s) : DB_EXCEPTION(s) { }
 };
 ```
+
 Only used one time `add_block` function when the specified block is already present in the database.
+
 ```cpp 
 throw1(BLOCK_EXISTS("Attempting to add block that's already in the db"));
 ```
@@ -175,6 +186,7 @@ class BLOCK_INVALID : public DB_EXCEPTION
     BLOCK_INVALID(const char* s) : DB_EXCEPTION(s) { }
 };
 ```
+
 Not in use.
 
 ### TX_DNE
@@ -190,6 +202,7 @@ class TX_DNE : public DB_EXCEPTION
     TX_DNE(const char* s) : DB_EXCEPTION(s) { }
 };
 ```
+
 Only used in `remove_transaction_data()`,`get_tx_unlock_time()` and `get_tx_block_height()`.
 
 ### TX_EXISTS
@@ -205,6 +218,7 @@ class TX_EXISTS : public DB_EXCEPTION
     TX_EXISTS(const char* s) : DB_EXCEPTION(s) { }
 };
 ```
+
 Only used in `add_transaction_data()` function when a item can be fetch with the same transaction ID:
 
 ```cpp
@@ -227,6 +241,7 @@ class OUTPUT_DNE : public DB_EXCEPTION
     OUTPUT_DNE(const char* s) : DB_EXCEPTION(s) { }
 };
 ```
+
 This is error is returned when an output can't been found in the database with the corresponding key and subkey (amount and amount idx). see Tables chapter for more details.
 
 ### OUTPUT_EXISTS
@@ -242,6 +257,7 @@ class OUTPUT_EXISTS : public DB_EXCEPTION
     OUTPUT_EXISTS(const char* s) : DB_EXCEPTION(s) { }
 };
 ```
+
 Not in use.
 
 ### KEY_IMAGE_EXISTS
@@ -257,7 +273,9 @@ class KEY_IMAGE_EXISTS : public DB_EXCEPTION
     KEY_IMAGE_EXISTS(const char* s) : DB_EXCEPTION(s) { }
 };
 ```
+
 Only used in `add_spent_key()` function when the key image already exist. It can't, unless the universe gave us a collision, but that is a legend only cryptographer dreamed of, or someone is double spending:
+
 ```cpp
   MDB_val k = {sizeof(k_image), (void *)&k_image};
   if (auto result = mdb_cursor_put(m_cur_spent_keys, (MDB_val *)&zerokval, &k, MDB_NODUPDATA)) {

@@ -8,9 +8,12 @@ src = "src"
 
 [output.html]
 mathjax-support = true
+additional-css = ["svgbob.css"]
 
 [build]
 build-dir = "book"                # the directory where the output is placed
 create-missing = false             # whether or not to create missing pages
 use-default-preprocessors = true  # use the default preprocessors
 extra-watch-dirs = []             # directories to watch for triggering builds
+
+[preprocessor.svgbob]

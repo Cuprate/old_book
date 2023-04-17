@@ -3,7 +3,7 @@
 ## About 
 
 [Cuprate](github.com/Cuprate/cuprate) is an independent Monero node written from
-the ground up in Rust. It's goal is to be an alternative to the only other existent Monero node, monerod, written in C/C++. We believe that Cuprate will help to secure the Monero network by acting as a "safety net" if a critical vulnerability had to be found in monerod.
+the ground up in Rust. It's goal is to be an alternative to the only other existent Monero node, monerod, written in C/C++. We believe that Cuprate will help to secure the Monero network by acting as a "safety net" if a critical vulnerability was to be found in monerod.
 
 Moreover, Cuprate also tries to bring numerous improvements over the original implementations. You can find more details at the [Cuprate](github.com/Cuprate/cuprate) repository page.
 
@@ -25,4 +25,4 @@ sent to this address will be used for **FUTURE** development only:
 
 **82rrTEtqbEa7GJkk7WeRXn67wC3acqG5mc7k6ce1b37jTdv5uM15gJa3vw7s4fDuA31BEufjBj2DzZUb42UqBaP23APEujL**
 
-<div align=center><img src="https://raw.githubusercontent.com/Cuprate/cuprate/best-readme-ever/qr-code.png"></img></div>
+<div align=center><img src="https://github.com/Cuprate/cuprate/blob/main/qr-code.png"></img></div>

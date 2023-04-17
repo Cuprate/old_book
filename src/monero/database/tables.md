@@ -2,10 +2,10 @@
 
 > Be aware that the current database schema might change when Seraphis is implemented. See: [https://github.com/seraphis-migration/wallet3/issues/11](https://github.com/seraphis-migration/wallet3/issues/11)
 
-Monerod stores every type of dynamic size in simple key-value tables. But any constant sized items (such as block's metadata for example) are stored as duplicated values in tables using dummy keys. Such tables are declared with DUPSORT & DUPFIXED flags. DUPSORT is a flag for the database to support duplicated data, DUPFIXED is used when the key is of a fixed size, to gain space
+Monerod stores every type of dynamic size in simple key-value tables. But any constant sized items (such as block's metadata for example) are stored as duplicated values in tables using dummy keys. Such tables are declared with DUPSORT & DUPFIXED flags. DUPSORT is a flag for the database to support duplicated data, DUPFIXED is used when the data is of a fixed size, to gain space
 (8 bytes per key).
 
-When talking about Subkey in this chapter, you must understand that the table use a dummy key and that the Subkey used to retrieve data is the first bytes, or prefix, of this data monerod is trying to get and the "main key" is the dummy key.
+When a table, in this chapter, has a Subkey without a Key that means the table uses the `Dummy Key`. This means that the actual key to the data is the first bytes of the data and the "Key" is the `Dummey Key`.
 
 ##### Normal table:
 
@@ -58,7 +58,7 @@ but the new one store through Duplicated data :
 **Subkey**: Block's height as `uint64_t` (8 bytes)</br>
 **Value**: Block's metadata as `mdb_block_info_4` (96 bytes).</br>
 
-This table store block's metadata. See types subchapter for more details about it.
+This table store [block's metadata](types.md#mdb_block_info_).
 
 ### txs
 ***
@@ -100,24 +100,25 @@ Store hash of prunable part of transactions (an hash of the signatures blob).
 
 This table stores the height for a transaction if that transaction is withing a certain amount of non-pruned tip blocks.
 
-Tip blocks are blocks at the top of the chain currently 5500 that won't get pruned. 
+[Tip blocks](pruning.md#tip-blocks) are blocks at the top of the chain currently 5500 that won't get pruned. 
 
 
-### txs_indices
+### tx_indices
 ***
 **Flags**: MDB_INTEGERKEY | MDB_DUPSORT | MDB_DUPFIXED</br>
 **Subkey**: Transaction's Hash as `char [32]`(8 bytes)</br>
 **Value**: Transaction's ID unlock time, and block's height as `tx_data_t` (24 bytes).</br>
 
-This table define the relation between transaction's hash (that can be found in blocks) and its transaction ID, transaction's unlock time and origin block's height.
+This table define the relation between transaction's hash (that can be found in blocks) and its transaction ID, transaction's unlock time and origin block's height.</br>
+[tx_data_t](types.md#tx_data_t)
 
-### txs_outputs
+### tx_outputs
 ***
 **Flags**: MDB_INTEGERKEY</br>
 **Key**: Transaction's ID as `uint64_t` (8 bytes)</br>
-**Value**: Transaction's outputs indices (amount and amount idx) as a `vector` of `(uint64_t,uint64t)` (Dynamic Size)</br>
+**Value**: Transaction's output amount idx as a `vector` of `uint64t` (Dynamic Size)</br>
 
-This table is used to quickly retrieve outputs of a specific transaction.
+This table is used when deleting a transaction to find the right outputs to delete.
 
 ### output_txs
 ***
@@ -134,7 +135,10 @@ This table is used to retrieve an ouput's transaction and its corresponding loca
 **Subkey**: Output's amount index as `uint64_t` (8 bytes)</br>
 **Value**: Output's metadata as `output_data_t` (PreRCT: 42 bytes, PostRCT: 80 bytes).</br>
 
-This table store the actual output data. Before RingCT, the outputs was sorted by their amount and then their local index for this specific amount. (this is why there is a Key **and** a Subkey). All post-RingCT output have an amount of 0 and are therefore stored under the zero key.
+This table store the actual output data. Before RingCT, the outputs was sorted by their amount and then their index for this specific amount. (this is why there is a Key **and** a Subkey). All post-RingCT output have an amount of 0 and are therefore stored under the zero key.
+
+[output_data_t](types.md#output_data_t)</br>
+[pre_rctoutput_data_t](types.md#pre_rct_outkey--pre_rct_output_data_t)
 
 ### spent_keys
 ***
@@ -150,7 +154,8 @@ This table exist to keep track of spent key image. It is used to quickly check f
 **Key**: Alternative Block's hash as `char [32]` (32 bytes)</br>
 **Value**: AltBlock's metadata and blob as `{alt_block_data_t, cryptonote::Blobdata}` (40 bytes + Dynamic size)</br>
 
-Used to store alternative blocks broadcasted in the network, since they might (if the required difficulty is achieved) reorganize the mainchain.
+Used to store alternative blocks broadcasted in the network, since they might (if the required difficulty is achieved) reorganize the mainchain.</br>
+[alt_block_data_t](types.md#alt_block_data_t)
 
 ### txpool_meta
 ***
@@ -158,7 +163,8 @@ Used to store alternative blocks broadcasted in the network, since they might (i
 **Key**: Transaction's Keccak-256 hash as `char [32]` (32 bytes)</br>
 **Value**: Transaction's metadata as `txpool_meta_t` (192 bytes)</br>
 
-This table store the metadata of transactions currently in the transaction pool.
+This table store the metadata of transactions currently in the transaction pool.</br>
+[txpool_meta_t](types.md#txpool_tx_meta_t)
 
 ### txpool_blob
 ***

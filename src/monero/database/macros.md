@@ -137,4 +137,5 @@ private:
   T t_copy;
 };
 ```
+
 This function allows you to copy any type that implements this template into a `MDB_val` struct.

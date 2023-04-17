@@ -16,7 +16,7 @@ src/
 			   └──db_lmdb.h
 ```
 
-Monerod use **LMDB** (Lightning Memory-Mapped Database), an embedded key-value database with a performance and stability record speaking for itself. It uses a Binary+ Tree to structure its stored data, this make it extremely efficient on disk optimized for random I/O, such as SSD. (*This is why the Monero Community discourage the use of HDD, that is designed for sequential writes. It really put overhead on the disk and dramatically slow down performance and its lifespan*.)
+Monerod use **LMDB** (Lightning Memory-Mapped Database), an embedded key-value database with a performance and stability record speaking for itself. It uses a Binary+ Tree to structure its stored data, this make it extremely efficient on a disk optimized for random I/O, such as SSD. This is perfect for Monero which requires a lot of random I/O when verifying transactions (*This is why the Monero Community discourage the use of HDD, that is designed for sequential writes. It really put overhead on the disk and dramatically slow down performance and its lifespan*).
 
 LMDB is lightweight, performant, embedded, ACID, reliable and support Copy-On-Write. So it is natural for the core-project to develop Monerod on top of it. Other options that could have been considered is LevelDB developed by Google, that show better read performance.
 
@@ -69,11 +69,11 @@ Here's a kind message from the developers that is definitely going to help us un
 ```
 
 **TL;DR**: For optimal performance a lot of data are duplicated into different tables to accelerate gathering by not having to deserialize an entire transaction if we just want an Output's commitment for example. Spent key images are duplicated to quickly check for and prevent double spends. Unspent Outputs are duplicated in a table to quickly gather random ones for mixins.
-For storage efficiency, object identifier used as database key are mapped as 64-bit integer : 
+For storage efficiency, object identifier used as database key are mapped as 64-bit integer: 
 - A Block ID is its height. 
-- A Tx ID is its N th canonical place in the blockchain. So the 100th transaction in monero history have a tx id of 100
-- An amount output index, is its N th place in the list of outputs with this amount. If a transaction had to use the 152th output with an amount
-of 5 XMR in monero history, the amount output index of this output would be 152.
+- A Tx ID is its N th canonical place in the blockchain. So the 100th transaction in Monero history have a tx id of 100
+- An amount output index, is its N th output in the list of outputs with this amount. If a transaction had to use the 152th output with an amount
+of 5 XMR in Monero history, the amount output index of this input would be 152.
 - An output local index, is its N th place in the list of outputs used in a specific tx.
 
 ### BlockchainDB Interface
@@ -96,7 +96,9 @@ Here's the description from monerod of BlockchainDB:
  */
 class BlockchainDB
 ```
-BlockchainDB take for unified error interface DB_EXCEPTION, another C++ class that inherit the standard C++ error class:
+
+BlockchainDB takes, for unified error interface, DB_EXCEPTION which is another C++ class that inherits the standard C++ error class:
+
 ```cpp
 /**
  * @brief A base class for BlockchainDB exceptions
@@ -112,11 +114,14 @@ And this is it. These two definitions are the only ones needed to implement anot
 LMDB code can be found under the `blockchain_db/lmdb/db_lmdb.h|.cpp` files.
 
 The first and most important matter of any key-value database is its database schema, or tables. As of now, we're at the 5th version the database:
+
 ```cpp
 // Increase when the DB structure changes
 #define VERSION 5
 ```
+
 You can find a comment on it in `db_lmdb.cpp`:
+
 ```cpp
 /* DB schema:
  *
@@ -152,11 +157,13 @@ You can find a comment on it in `db_lmdb.cpp`:
  * The output_amounts table doesn't use a dummy key, but uses DUPSORT.
  */
 ```
+
 At first glance you might think that this is detailed and complete (and if you perfectly understand congratulations, you're a core dev), but if you, like me, started discovering the node by its database, you'll quickly ask yourself dumb questions such as: 
 
-*block ID is an height, why not  just put "block height" in the Key column then?*, *Block blob means it is block bytes, this means there is other data that aren't encoded, there aren't.* *Ok {...} means it is a struct, but which struct?* *what is a dummy key?* *Why "{block metadata}" but then "txn metadata",txpool don't put metadata in a struct?* *[...] means its an array or a tuple ????* *Can I have an explanation of each table purpose?*
+*block ID is an height, why not  just put "block height" in the Key column then?*, *Block blob means it is block bytes, this means there is other data that isn't encoded, there isn't.* *Ok {...} means it is a struct, but which struct?* *what is a dummy key?* *Why "{block metadata}" but then "txn metadata",txpool don't put metadata in a struct?* *[...] means its an array or a tuple ????* *Can I have an explanation of each tables purpose?*
 
-Anyway, you might not see it before looking right under this comment, but there is 3 more tables : 
+Anyway, you might not see it before looking right under this comment, but there is 3 more tables: 
+
 ```cpp
 const char* const LMDB_BLOCKS = "blocks";
 const char* const LMDB_BLOCK_HEIGHTS = "block_heights";
@@ -187,8 +194,7 @@ const char* const LMDB_PROPERTIES = "properties";
 
 And if you don't know what is a "zerokval" dummy key, here's an explanation: 
 
-Normally, key-value database map the access of a value through its key. But imagine if we want multiple values for the same key, how do we proceed? Here comes the cursors, cursors are capable of iterating over duplicated data placed under the same key. A very cool
-feature of LMDB is that you can get a data not just by iterating them until finding the one you want, but you can give the prefix of the data you want to receive. If you do that LMDB returns the value that has these first bytes you give it. So an optimization to gain space, is to use a *dummy key*. For monerod it is 8 empty (zero) bytes placed as the only key in the table. Every data will be placed under this dummy key. When you want to get specific data, you just have to place the cursor under this key and give LMDB the prefix of the data, which, in practice, acts as the *real key*. 
+Normally, key-value database map the access of a value through its key. But imagine if we want multiple values for the same key, how do we proceed? Here comes the cursors, cursors are capable of iterating over duplicated data placed under the same key. A very cool feature of LMDB is that you can get a data not just by iterating them until finding the one you want, but you can give the prefix of the data you want to receive. If you do that LMDB returns the value that has these first bytes you give it. So an optimization to gain space, is to use a *dummy key*. For monerod it is 8 empty (zero) bytes placed as the only key in the table. Every data will be placed under this dummy key. When you want to get specific data, you just have to place the cursor under this key and give LMDB the prefix of the data, which, in practice, acts as the *real key*. 
 
 **See [Tables](tables.md) subchapter for details of all tables**
 
