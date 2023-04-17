@@ -25,4 +25,4 @@ sent to this address will be used for **FUTURE** development only:
 
 **82rrTEtqbEa7GJkk7WeRXn67wC3acqG5mc7k6ce1b37jTdv5uM15gJa3vw7s4fDuA31BEufjBj2DzZUb42UqBaP23APEujL**
 
-<div align=center><img src="https://github.com/Cuprate/cuprate/blob/main/qr-code.png"></img></div>
+<div align=center><img src="https://raw.githubusercontent.com/Cuprate/cuprate/main/qr-code.png"></img></div>
