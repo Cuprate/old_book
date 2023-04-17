@@ -1,7 +1,19 @@
 [book]
-authors = ["Cuprate devs"]
-language = "en"
-multilingual = false
-src = "src"
-title = "Cuprate Docs"
+title = "Cuprate's book"
+authors = ["Cuprate developers"]
 description = "This book covers Cuprate and Monero protocol documentation."
+language = "en"
+multilingual = true
+src = "src"
+
+[output.html]
+mathjax-support = true
+additional-css = ["svgbob.css"]
+
+[build]
+build-dir = "book"                # the directory where the output is placed
+create-missing = false             # whether or not to create missing pages
+use-default-preprocessors = true  # use the default preprocessors
+extra-watch-dirs = []             # directories to watch for triggering builds
+
+[preprocessor.svgbob]
