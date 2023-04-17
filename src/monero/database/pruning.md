@@ -245,6 +245,16 @@ If you remember from the table [here](#stripes-size) each stripe will keep a par
 
 Each stripe will stop keeping blocks at one less than the next stripes start.
 
+This can be formalized into the equation:
+
+`numb_of_cycles * blocks_in_a_cycle + (stripe - 1) * stripe_size`
+
+which also equals:
+
+`numb_of_cycles * (stripe_size * amt_of_stripes) + (stripe - 1) * stripe_size`
+
+
+
 Knowing this lets split this into 2 parts:
 
 #### Part 1:
@@ -259,7 +269,8 @@ This gets the block height at the start of the `cycle_start` cycle, so if `cycle
 - `1` the height would be `32768`
 - `2` the height would be `65536`
 
-which is: `numb_of_cycles * 32768`
+Which is: `numb_of_cycles * blocks_in_a_cycle`.</br>
+For normal Monero pruning: `numb_of_cycles * (4096 * 8)`
 
 #### Part 2:
 
@@ -275,9 +286,19 @@ For example if the seeds stripe was:
 - `2` the amount of blocks would be `4096`
 - `3` the amount of blocks would be `8192`
 
-which is: (stripe-1) * 4096
+which is: `(stripe-1) * stripe_size`
 
-As you can see if we add the amount of blocks until the start of a cycle (`numb_of_cycles * 32768`) to the amount of blocks into a cycle the until the seeds stripe "kicks in" (`(stripe-1) * 4096`) we will get the next un-pruned height. Yay we are done!
+As you can see if we add the amount of blocks until the start of a cycle (`numb_of_cycles * blocks_in_a_cycle`) to the amount of blocks into a cycle the until the seeds stripe "kicks in" (`(stripe-1) * stripe_size`) we will get the next un-pruned height.
+
+```c++
+if (h + CRYPTONOTE_PRUNING_TIP_BLOCKS > blockchain_height)
+    return blockchain_height < CRYPTONOTE_PRUNING_TIP_BLOCKS ? 0 : blockchain_height - CRYPTONOTE_PRUNING_TIP_BLOCKS;
+CHECK_AND_ASSERT_MES(h >= block_height, block_height, "h < block_height, unexpected");
+return h;
+```
+
+We now have to check if the height we calculated is above the [tip blocks](#tip-blocks), if it is we get the starting height of the tip blocks and return that or if it isn't over
+the tip blocks we can just return the calculated height. Yay, we are done!
 
 ## Getting The Next Pruned Block 
 
